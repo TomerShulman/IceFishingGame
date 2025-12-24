@@ -1,0 +1,286 @@
+/** מחלקת דג למשחק הדיג - גרסה מתוקנת ללא שגיאות קומפילציה */
+class Fish {
+    field int x, y;        /* מיקום בפיקסלים (0-511, 0-255) */
+    field int location;    /* מיקום בזיכרון (0-8191) */
+    field int direction;   /* 1 לימין, -1 לשמאל */
+    field boolean isCaught; /* מצב תפיסה: אמת אם הדג נתפס */
+    field boolean isDead;   /* האם הדג הגיע לקצה המסך וצריך להיעלם */
+
+    /** בניית דג חדש במיקום התחלתי וכיוון */
+    constructor Fish new(int Ax, int Ay, int Adir) {
+        let x = Ax;
+        let y = Ay;
+        let direction = Adir; 
+        let isCaught = false;
+        let isDead = false;
+        do calculateLocation();
+        return this;
+    }
+
+    /** מחזיר אמת אם הדג סיים את תנועתו */
+    method boolean getIsDead() {
+        return isDead;
+    }
+
+    method int getX() { return x; }
+    method int getY() { return y; }
+
+    /** חישוב המיקום בזיכרון לפי x ו-y */
+    method void calculateLocation() {
+        let location = (y * 32) + (x / 16);
+        return;
+    }
+
+    /** ציור הדג - בחירה לפי מצב */
+    method void draw() {
+        var int memAddress; 
+        let memAddress = 16384 + location;
+        
+        if (isCaught) {
+            do drawCaught(memAddress);
+        } else {
+            if (direction > 0) {
+                do drawRight(memAddress);
+            } else {
+                do drawLeft(memAddress);
+            }
+        }
+        return;
+    }
+
+    /** ציור הדג שוחה לימין */
+    method void drawRight(int memAddress) {
+        do Memory.poke(memAddress + 224, -32708);
+        do Memory.poke(memAddress + 256, -4033);
+        do Memory.poke(memAddress + 288, 7407);
+        do Memory.poke(memAddress + 320, -28793);
+        do Memory.poke(memAddress + 352, -32754);
+        do Memory.poke(memAddress + 384, 28);
+        do Memory.poke(memAddress + 416, 28);
+        do Memory.poke(memAddress + 448, 12);
+        do Memory.poke(memAddress + 480, -252);
+        do Memory.poke(memAddress + 512, 398);
+        do Memory.poke(memAddress + 544, 254);
+        do Memory.poke(memAddress + 576, 62);
+        do Memory.poke(memAddress + 608, 24);
+        do Memory.poke(memAddress + 1, 1022);
+        do Memory.poke(memAddress + 33, 1804);
+        do Memory.poke(memAddress + 65, 7704);
+        do Memory.poke(memAddress + 97, 12400);
+        do Memory.poke(memAddress + 129, -7968);
+        do Memory.poke(memAddress + 161, 32760);
+        do Memory.poke(memAddress + 193, 16414);
+        do Memory.poke(memAddress + 225, 16399);
+        do Memory.poke(memAddress + 257, -32767);
+        do Memory.poke(memAddress + 289, 16387);
+        do Memory.poke(memAddress + 321, -14991);
+        do Memory.poke(memAddress + 353, 1280);
+        do Memory.poke(memAddress + 385, 1302);
+        do Memory.poke(memAddress + 417, 1308);
+        do Memory.poke(memAddress + 481, 17);
+        do Memory.poke(memAddress + 513, 30);
+        do Memory.poke(memAddress + 545, 1008);
+        do Memory.poke(memAddress + 577, -3968);
+        do Memory.poke(memAddress + 609, 14528);
+        do Memory.poke(memAddress + 641, 3168);
+        do Memory.poke(memAddress + 673, 2032);
+        do Memory.poke(memAddress + 130, 7);
+        do Memory.poke(memAddress + 162, 124);
+        do Memory.poke(memAddress + 194, 453);
+        do Memory.poke(memAddress + 226, 900);
+        do Memory.poke(memAddress + 258, 3971);
+        do Memory.poke(memAddress + 290, 6153);
+        do Memory.poke(memAddress + 322, 14351);
+        do Memory.poke(memAddress + 354, 28672);
+        do Memory.poke(memAddress + 386, -8192);
+        do Memory.poke(memAddress + 418, -4096);
+        do Memory.poke(memAddress + 450, -16);
+        do Memory.poke(memAddress + 482, 3072);
+        do Memory.poke(memAddress + 514, 3968);
+        do Memory.poke(memAddress + 546, 1008);
+        do Memory.poke(memAddress + 578, 31);
+        return;
+    }
+
+    /** ציור הדג שוחה לשמאל */
+    method void drawLeft(int memAddress) {
+        /* ביטמאפ בסיסי לשמאל */
+        do Memory.poke(memAddress + 1, 1022);
+        do Memory.poke(memAddress + 33, 1804);
+        do Memory.poke(memAddress + 65, 7704);
+        do Memory.poke(memAddress + 97, 12400);
+        return;
+    }
+
+    /** ציור הדג במצב נתפס (אנכי) */
+    method void drawCaught(int memAddress) {
+// עמודה 0 (הצד השמאלי של הדג העומד) 
+	let memAddress = 16384+location;
+	// column 0
+	do Memory.poke(memAddress +544, 0);
+	do Memory.poke(memAddress +576, -16384);
+	do Memory.poke(memAddress +608, -16384);
+	do Memory.poke(memAddress +640, 16384);
+	do Memory.poke(memAddress +672, 16384);
+	do Memory.poke(memAddress +704, 16384);
+	do Memory.poke(memAddress +736, 16384);
+	do Memory.poke(memAddress +768, 16384);
+	do Memory.poke(memAddress +800, -16384);
+	do Memory.poke(memAddress +832, -16384);
+	// column 1
+	do Memory.poke(memAddress +1, -8192);
+	do Memory.poke(memAddress +33, -4096);
+	do Memory.poke(memAddress +65, -2048);
+	do Memory.poke(memAddress +97, -17408);
+	do Memory.poke(memAddress +129, 3584);
+	do Memory.poke(memAddress +161, 512);
+	do Memory.poke(memAddress +193, 768);
+	do Memory.poke(memAddress +225, 896);
+	do Memory.poke(memAddress +257, 448);
+	do Memory.poke(memAddress +289, 1784);
+	do Memory.poke(memAddress +321, 1160);
+	do Memory.poke(memAddress +353, 1960);
+	do Memory.poke(memAddress +385, 1160);
+	do Memory.poke(memAddress +417, 1656);
+	do Memory.poke(memAddress +449, 24);
+	do Memory.poke(memAddress +481, 28);
+	do Memory.poke(memAddress +513, 22);
+	do Memory.poke(memAddress +545, 19);
+	do Memory.poke(memAddress +577, 17);
+	do Memory.poke(memAddress +609, 17);
+	do Memory.poke(memAddress +641, 31760);
+	do Memory.poke(memAddress +673, 24);
+	do Memory.poke(memAddress +705, 31768);
+	do Memory.poke(memAddress +737, 28);
+	do Memory.poke(memAddress +769, 1047);
+	do Memory.poke(memAddress +801, 1075);
+	do Memory.poke(memAddress +833, 13360);
+	do Memory.poke(memAddress +865, 8240);
+	do Memory.poke(memAddress +897, 12656);
+	do Memory.poke(memAddress +929, 4960);
+	do Memory.poke(memAddress +961, 1632);
+	do Memory.poke(memAddress +993, 64);
+	do Memory.poke(memAddress +1025, 192);
+	do Memory.poke(memAddress +1057, 128);
+	do Memory.poke(memAddress +1089, 128);
+	do Memory.poke(memAddress +1121, 192);
+	do Memory.poke(memAddress +1153, 96);
+	do Memory.poke(memAddress +1185, 30832);
+	do Memory.poke(memAddress +1217, 30960);
+	do Memory.poke(memAddress +1249, -784);
+	do Memory.poke(memAddress +1281, -64);
+	do Memory.poke(memAddress +1313, 1984);
+	do Memory.poke(memAddress +1345, 896);
+	// column 2
+	do Memory.poke(memAddress +2, 1);
+	do Memory.poke(memAddress +34, 1);
+	do Memory.poke(memAddress +66, 1);
+	do Memory.poke(memAddress +98, 7);
+	do Memory.poke(memAddress +130, 15);
+	do Memory.poke(memAddress +162, 25);
+	do Memory.poke(memAddress +194, 25);
+	do Memory.poke(memAddress +226, 25);
+	do Memory.poke(memAddress +258, 17);
+	do Memory.poke(memAddress +290, 49);
+	do Memory.poke(memAddress +322, 32);
+	do Memory.poke(memAddress +354, 32);
+	do Memory.poke(memAddress +386, 32);
+	do Memory.poke(memAddress +418, 32);
+	do Memory.poke(memAddress +450, 96);
+	do Memory.poke(memAddress +482, 224);
+	do Memory.poke(memAddress +514, 384);
+	do Memory.poke(memAddress +546, 768);
+	do Memory.poke(memAddress +578, 528);
+	do Memory.poke(memAddress +610, 528);
+	do Memory.poke(memAddress +642, 560);
+	do Memory.poke(memAddress +674, 624);
+	do Memory.poke(memAddress +706, 720);
+	do Memory.poke(memAddress +738, 924);
+	do Memory.poke(memAddress +770, 8);
+	do Memory.poke(memAddress +802, 8);
+	do Memory.poke(memAddress +834, 12);
+	do Memory.poke(memAddress +866, 6);
+	do Memory.poke(memAddress +898, 3);
+	do Memory.poke(memAddress +930, 3);
+	do Memory.poke(memAddress +962, 1);
+	do Memory.poke(memAddress +994, 1);
+	do Memory.poke(memAddress +1026, 1);
+	do Memory.poke(memAddress +1058, 1);
+	do Memory.poke(memAddress +1090, 1);
+	do Memory.poke(memAddress +1122, 31);
+	do Memory.poke(memAddress +1154, 24);
+	do Memory.poke(memAddress +1186, 24);
+	do Memory.poke(memAddress +1218, 24);
+	do Memory.poke(memAddress +1250, 28);
+	do Memory.poke(memAddress +1282, 31);
+	do Memory.poke(memAddress +1314, 31);
+	return;
+    }
+
+/** מחיקה מלאה של הדג מהמסך */
+    method void erase() {
+        var int memAddress;
+        var int i;
+        let memAddress = 16384 + location;
+        let i = 0;
+        
+        // 1440 מכסה כ-45 שורות, מה שמבטיח מחיקה של הדג האנכי הגבוה
+        while (i < 1440) { 
+            // מחיקת 3 מילים (48 פיקסלים לרוחב) כדי לוודא שכל גוף הדג נמחק
+            if ((location + i) < 8192) { // בדיקת בטיחות שלא חורגים מהמסך
+                do Memory.poke(memAddress + i, 0);
+                do Memory.poke(memAddress + i + 1, 0);
+                do Memory.poke(memAddress + i + 2, 0);
+            }
+            let i = i + 32;
+        }
+        return;
+    }
+
+    /** עדכון מצב הדג */
+    method void setCaught(boolean state) {
+        do erase();
+        let isCaught = state;
+        do draw();
+        return;
+    }
+
+/** פונקציית התנועה המעודכנת */
+    method void move() {
+        if (isDead) { return; }
+        
+        do erase(); // מחיקה של המיקום הישן
+        
+        if (isCaught) {
+            // תנועה למעלה לכיוון הסירה
+            if (y > 115) { 
+                let y = y - 2; 
+            } else { 
+                // הדג הגיע לסירה - צריך להיעלם
+                let isDead = true; 
+            }
+        } else {
+            // תנועה אופקית רגילה
+            let x = x + (direction * 16);
+            if (direction > 0) {
+                if (x > 480) { let isDead = true; }
+            } else {
+                if (x < 16) { let isDead = true; }
+            }
+        }
+        
+        // ציור מחדש רק אם הדג עדיין "חי" ולא הגיע ליעדו
+        if (~isDead) {
+            do calculateLocation();
+            do draw();
+        }
+        // אם הוא מת (isDead = true), הוא כבר נמחק בתחילת הפונקציה ולא יצויר שוב
+        return;
+    }
+
+    /** שחרור זיכרון */
+    method void dispose() {
+        do Memory.deAlloc(this);
+        return;
+    }
+}
