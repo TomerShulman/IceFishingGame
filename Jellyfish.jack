@@ -1,0 +1,127 @@
+/** מחלקת מדוזה - מכשול שזז אופקית ופוגע בחיים */
+class Jellyfish {
+    field int x, y;        /* מיקום בפיקסלים */
+    field int location;    /* מיקום בזיכרון */
+    field int direction;   /* 1 לימין, -1 לשמאל */
+    field boolean isDead;  /* האם המדוזה צריכה להיעלם */
+
+    /** בניית מדוזה חדשה במיקום התחלתי וכיוון */
+    constructor Jellyfish new(int Ax, int Ay, int Adir) {
+        let x = Ax;
+        let y = Ay;
+        let direction = Adir;
+        let isDead = false;
+        do calculateLocation();
+        return this;
+    }
+
+    /** פונקציות גישה לנתוני המדוזה */
+    method int getX() { return x; }
+    method int getY() { return y; }
+    method boolean getIsDead() { return isDead; }
+
+    /** חישוב המיקום בזיכרון המסך */
+    method void calculateLocation() {
+        let location = (y * 32) + (x / 16);
+        return;
+    }
+
+    /** ציור המדוזה לפי ה-Bitmap ששלחת */
+    method void draw() {
+        var int memAddress;
+        let memAddress = 16384 + location;
+        
+        /* column -2 */
+        do Memory.poke(memAddress - 2, -16384);
+        do Memory.poke(memAddress + 30, 28672);
+        do Memory.poke(memAddress + 62, 7168);
+        do Memory.poke(memAddress + 94, -6656);
+        do Memory.poke(memAddress + 126, -23808);
+        do Memory.poke(memAddress + 158, 384);
+        do Memory.poke(memAddress + 190, -16256);
+        do Memory.poke(memAddress + 222, 128);
+        do Memory.poke(memAddress + 254, -128);
+        do Memory.poke(memAddress + 286, 17536);
+        do Memory.poke(memAddress + 318, -12928);
+        do Memory.poke(memAddress + 350, -30464);
+        do Memory.poke(memAddress + 382, -12928);
+        do Memory.poke(memAddress + 414, 17536);
+        do Memory.poke(memAddress + 446, -12928);
+        do Memory.poke(memAddress + 478, -30464);
+        do Memory.poke(memAddress + 510, -12928);
+        do Memory.poke(memAddress + 542, 17536);
+        do Memory.poke(memAddress + 574, -12928);
+        do Memory.poke(memAddress + 606, -30464);
+        do Memory.poke(memAddress + 638, -12928);
+        do Memory.poke(memAddress + 670, 17536);
+        do Memory.poke(memAddress + 702, 19840);
+        
+        /* column -1 */
+        do Memory.poke(memAddress - 1, 255);
+        do Memory.poke(memAddress + 31, 384);
+        do Memory.poke(memAddress + 63, 1536);
+        do Memory.poke(memAddress + 95, 3323);
+        do Memory.poke(memAddress + 127, 6314);
+        do Memory.poke(memAddress + 159, 4096);
+        do Memory.poke(memAddress + 191, 12415);
+        do Memory.poke(memAddress + 223, 24576);
+        do Memory.poke(memAddress + 255, 32767);
+        do Memory.poke(memAddress + 287, 9284);
+        do Memory.poke(memAddress + 319, 27852);
+        do Memory.poke(memAddress + 351, 18568);
+        do Memory.poke(memAddress + 383, 27852);
+        do Memory.poke(memAddress + 415, 9284);
+        do Memory.poke(memAddress + 447, 27852);
+        do Memory.poke(memAddress + 479, 26760);
+        do Memory.poke(memAddress + 511, 11468);
+        do Memory.poke(memAddress + 543, 25668);
+        do Memory.poke(memAddress + 575, 19660);
+        do Memory.poke(memAddress + 607, 26760);
+        do Memory.poke(memAddress + 639, 11468);
+        do Memory.poke(memAddress + 671, 25668);
+        do Memory.poke(memAddress + 703, 19660);
+        return;
+    }
+
+    /** מחיקת המדוזה מהמסך */
+    method void erase() {
+        var int memAddress;
+        var int i;
+        let memAddress = 16384 + location;
+        let i = -2;
+        while (i < 736) {
+            do Memory.poke(memAddress + i, 0);
+            do Memory.poke(memAddress + i + 1, 0);
+            let i = i + 32;
+        }
+        return;
+    }
+
+    /** הזזת המדוזה ועדכון המיקום */
+    method void move() {
+        if (isDead) { return; }
+        do erase();
+        let x = x + (direction * 8);
+        /* בדיקת גבולות המסך */
+        if (x > 480) { let isDead = true; }
+        if (x < 32) { let isDead = true; }
+        if (~isDead) {
+            do calculateLocation();
+            do draw();
+        }
+        return;
+    }
+
+    /** קביעת מצב מוות באופן ידני (למשל בהתנגשות) */
+    method void setDead(boolean state) {
+        do erase();
+        let isDead = state;
+        return;
+    }
+
+    /** שחרור הזיכרון של האובייקט */
+    method void dispose() {
+        do Memory.deAlloc(this);
+        return;
+    }
+}
