@@ -7,7 +7,7 @@ class Penguin {
     let x = 208; 
     let y = 15;  
     
-    // חישוב מיקום החכה ביחס לפינגווין
+	// set hook at the right place
     let hook = Hook.new(x + 48); // השמה ישירה לשדה
     
     return this;
@@ -263,7 +263,7 @@ class Penguin {
 	do Memory.poke(memAddress +2116, 2050);
 	do Memory.poke(memAddress +2148, 4094);
 	return;
-    }
+	}
 
     method Hook getHook() {
         return hook;
