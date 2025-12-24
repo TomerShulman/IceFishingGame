@@ -1,36 +1,34 @@
 class Ice {
-    field int y; // גובה משטח הקרח
+    field int surfaceY;   
+    field int thickness;  
 
     constructor Ice new() {
-        let y = 50; // קו הקרח (מתאים לרגלי הפינגווין)
+        let surfaceY = 84;  
+        let thickness = 4;  
         return this;
     }
 
-    // הפונקציה מקבלת את מיקום ה-X של החכה כדי למקם את החור בהתאמה
     method void draw(int hookX) {
-        var int r;
-        let r = 12; // רדיוס החור
+        var int halfWidth;
+        var int holeLeft, holeRight;
+        
+        // תיקון: הזזה של 8 פיקסלים שמאלה
+        let hookX = hookX - 11; 
+        
+        let halfWidth = 22; 
+        let holeLeft = hookX - halfWidth;
+        let holeRight = hookX + halfWidth;
 
-        do Screen.setColor(true); // צבע שחור
+        do Screen.setColor(true); // שחור
 
-        // 1. ציור משטח הקרח משמאל לחור
-        // מצייר מלבן מקצה המסך (0) ועד קצה החור השמאלי
-        do Screen.drawRectangle(0, y, hookX - r, y + 2);
+        // 1. משטח שמאלי
+        do Screen.drawRectangle(0, surfaceY, holeLeft, surfaceY + thickness);
 
-        // 2. ציור משטח הקרח מימין לחור
-        // מצייר מלבן מקצה החור הימני ועד סוף המסך (511)
-        do Screen.drawRectangle(hookX + r, y, 511, y + 2);
+        // 2. משטח ימני
+        do Screen.drawRectangle(holeRight, surfaceY, 511, surfaceY + thickness);
 
-        // 3. ציור המסגרת של החור (עיגול)
-        do Screen.drawCircle(hookX, y, r);
-
-        // 4. הופכים את העיגול ל"חלול" (מוחקים את הבפנים שלו בלבן)
-        do Screen.setColor(false); // צבע לבן
-        do Screen.drawCircle(hookX, y, r - 2); // עיגול פנימי קטן יותר
-
-        // 5. מחיקת החלק העליון של העיגול (כדי שיראה כמו בור פתוח ולא כדור סגור)
-        // אנחנו מוחקים מלבן מעל קו הקרח
-        do Screen.drawRectangle(hookX - r, y - r, hookX + r, y - 1);
+        // 3. קו מים מחבר למטה
+        do Screen.drawLine(holeLeft, surfaceY + thickness, holeRight, surfaceY + thickness);
 
         return;
     }
