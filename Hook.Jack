@@ -1,0 +1,23 @@
+class Hook {
+    field int x; // קואורדינטת ה-X שהגיעה מהפינגווין
+    field int y; // העומק של החכה
+
+    /** Constructor matching the call in Penguin: let hook = Hook.new(x + 48); */
+    constructor Hook new(int initialX) {
+        let x = initialX;
+        let y = 20; // גובה התחלתי (קו הקרח)
+        return this;
+    }
+
+    /** Disposes the hook object. */
+    method void dispose() {
+        do Memory.deAlloc(this);
+        return;
+    }
+
+    // הוספתי פונקציה ריקה לציור כדי שתוכלו לקרוא לה בהמשך
+    method void draw() {
+        // כאן תממשו את ציור החוט והקרס
+        return;
+    }
+}

@@ -1,0 +1,42 @@
+class Ice {
+    field int y; // גובה משטח הקרח
+
+    constructor Ice new() {
+        let y = 50; // קו הקרח (מתאים לרגלי הפינגווין)
+        return this;
+    }
+
+    // הפונקציה מקבלת את מיקום ה-X של החכה כדי למקם את החור בהתאמה
+    method void draw(int hookX) {
+        var int r;
+        let r = 12; // רדיוס החור
+
+        do Screen.setColor(true); // צבע שחור
+
+        // 1. ציור משטח הקרח משמאל לחור
+        // מצייר מלבן מקצה המסך (0) ועד קצה החור השמאלי
+        do Screen.drawRectangle(0, y, hookX - r, y + 2);
+
+        // 2. ציור משטח הקרח מימין לחור
+        // מצייר מלבן מקצה החור הימני ועד סוף המסך (511)
+        do Screen.drawRectangle(hookX + r, y, 511, y + 2);
+
+        // 3. ציור המסגרת של החור (עיגול)
+        do Screen.drawCircle(hookX, y, r);
+
+        // 4. הופכים את העיגול ל"חלול" (מוחקים את הבפנים שלו בלבן)
+        do Screen.setColor(false); // צבע לבן
+        do Screen.drawCircle(hookX, y, r - 2); // עיגול פנימי קטן יותר
+
+        // 5. מחיקת החלק העליון של העיגול (כדי שיראה כמו בור פתוח ולא כדור סגור)
+        // אנחנו מוחקים מלבן מעל קו הקרח
+        do Screen.drawRectangle(hookX - r, y - r, hookX + r, y - 1);
+
+        return;
+    }
+
+    method void dispose() {
+        do Memory.deAlloc(this);
+        return;
+    }
+}

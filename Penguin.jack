@@ -1,21 +1,17 @@
 class Penguin {
-    field int x, y;       // Screen coordinates of the penguin (top-left corner)
-    field Hook hook;      // The fishing hook object owned by the penguin
-    
+    field int x, y;       // Screen coordinates of the penguin (top-left corner)    
    /** Constructs a new Penguin at a fixed center position. */
     constructor Penguin new() {
     let x = 208; 
     let y = 15;  
     
-	// set hook at the right place
-    let hook = Hook.new(x + 48); // השמה ישירה לשדה
-    
+	// set hook at the right place    
     return this;
 }
     method void draw() {
         var int location;
         // Calculate memory offset for fixed position
-        let location = (y * 32) + (x / 16);
+        let location = (y * 32) + (x / 16)+3;
         do drawBitmap(location);
         return;
     }
@@ -265,12 +261,8 @@ class Penguin {
 	return;
 	}
 
-    method Hook getHook() {
-        return hook;
-    }
 
     method void dispose() {
-        do hook.dispose();
         do Memory.deAlloc(this);
         return;
     }
