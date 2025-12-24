@@ -12,22 +12,22 @@ class Ice {
         var int halfWidth;
         var int holeLeft, holeRight;
         
-        // תיקון: הזזה של 8 פיקסלים שמאלה
+        // Correction: Shift 8 pixels to the left
         let hookX = hookX - 11; 
         
         let halfWidth = 22; 
         let holeLeft = hookX - halfWidth;
         let holeRight = hookX + halfWidth;
 
-        do Screen.setColor(true); // שחור
+        do Screen.setColor(true); // Black
 
-        // 1. משטח שמאלי
+        // 1. Left surface
         do Screen.drawRectangle(0, surfaceY, holeLeft, surfaceY + thickness);
 
-        // 2. משטח ימני
+        // 2. Right surface
         do Screen.drawRectangle(holeRight, surfaceY, 511, surfaceY + thickness);
 
-        // 3. קו מים מחבר למטה
+        // 3. Connecting water line at the bottom
         do Screen.drawLine(holeLeft, surfaceY + thickness, holeRight, surfaceY + thickness);
 
         return;

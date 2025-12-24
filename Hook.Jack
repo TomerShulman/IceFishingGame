@@ -1,23 +1,71 @@
 class Hook {
-    field int x; // קואורדינטת ה-X שהגיעה מהפינגווין
-    field int y; // העומק של החכה
+    field int x;      
+    field int y;
+    field int rodTipY; 
 
-    /** Constructor matching the call in Penguin: let hook = Hook.new(x + 48); */
-    constructor Hook new(int initialX) {
-        let x = initialX;
-        let y = 20; // גובה התחלתי (קו הקרח)
+    // constructor
+    constructor Hook new(int startX) {
+        let x = startX;
+        let y = 84;
+        let rodTipY = 40; 
         return this;
     }
 
-    /** Disposes the hook object. */
     method void dispose() {
         do Memory.deAlloc(this);
         return;
     }
 
-    // הוספתי פונקציה ריקה לציור כדי שתוכלו לקרוא לה בהמשך
     method void draw() {
-        // כאן תממשו את ציור החוט והקרס
+        do Screen.setColor(true);
+        // Draw the line
+        do Screen.drawLine(x, rodTipY, x, y);
+        
+        // Draw the hook
+        do Screen.drawLine(x, y, x, y + 6);
+        do Screen.drawLine(x, y + 6, x - 3, y + 6);
+        do Screen.drawLine(x - 3, y + 6, x - 3, y + 3);
+        do Screen.drawPixel(x - 2, y + 4);
         return;
+    }
+
+    method void erase() {
+        do Screen.setColor(false);
+        do Screen.drawLine(x, rodTipY, x, y);
+        
+        do Screen.drawLine(x, y, x, y + 6);
+        do Screen.drawLine(x, y + 6, x - 3, y + 6);
+        do Screen.drawLine(x - 3, y + 6, x - 3, y + 3);
+        do Screen.drawPixel(x - 2, y + 4);
+        return;
+    }
+
+    // Move down
+    method void moveDown() {
+        if (y < 245) {
+            do erase();     
+            let y = y + 2; 
+            do draw();      
+        }
+        return;
+    }
+
+    // Move up
+    method void moveUp() {
+        if (y > 50) {
+            do erase();
+            let y = y - 2;
+            do draw();
+        }
+        return;
+    }
+
+    // Getters
+    method int getY() {
+        return y;
+    }
+    
+    method int getX() {
+        return x;
     }
 }

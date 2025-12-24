@@ -1,26 +1,13 @@
 class Main {
-    function void main() {
-        var Penguin p;
-        var Ice ice;
-        var int hookX; // משתנה לשמירת מיקום החכה
-        
-        // יצירת האובייקטים
-        let p = Penguin.new();
-        let ice = Ice.new();
-        
-        // חישוב המיקום המדויק של החור לפי הפינגווין
-        // הפינגווין ב-208 + הזזה ימינה (16 פיקסלים) + החכה (48 פיקסלים)
-        // אם לא הזזתם את הפינגווין בבנאי שלו, החישוב הוא:
-        let hookX = 208 + 16 + 48; // = 272
 
-        // סדר הציור חשוב!
-        do ice.draw(hookX); // קודם מציירים רקע
-        do p.draw();        // אחר כך פינגווין
+    /** Initializes a new game and starts running it. */
+    function void main() {
+        var Game game;
+
+        let game = Game.new();
+        do game.run();
         
-        do Sys.wait(5000);
-        
-        do p.dispose();
-        do ice.dispose();
+        do game.dispose();
         return;
     }
 }

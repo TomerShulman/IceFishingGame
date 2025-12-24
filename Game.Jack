@@ -1,0 +1,144 @@
+class Game {
+    // Graphic objects
+    field Penguin penguin;
+    field Hook hook;
+    field Ice ice;
+
+    // Game state variables
+    field boolean exit;
+    field int score;
+    field int lives; 
+
+    /** Constructor: Initializes the game */
+    constructor Game new() {
+        // Clear screen and initial settings
+        do Screen.clearScreen();
+        let exit = false;
+        let score = 0;
+        let lives = 3; // Start with 3 hearts
+
+        // Create objects
+        let ice = Ice.new();
+        let penguin = Penguin.new();
+        let hook = Hook.new(256); // Hook position (aligned with penguin)
+
+        // Draw world
+        do ice.draw(256);
+        do penguin.draw();
+        do hook.draw();
+
+        // Draw GUI (Score and lives)
+        do drawGui(); 
+        
+        return this;
+    }
+
+    /** Main function running the game */
+    method void run() {
+        var char key;
+
+        while (~exit) {
+            // Check which key is currently pressed
+            let key = Keyboard.keyPressed();
+            
+            // --- Movement (works with long press) ---
+            if (key = 131) { do hook.moveUp(); }   // Up arrow
+            if (key = 133) { do hook.moveDown(); } // Down arrow
+
+            // --- Single keys ---
+            if (key = 81)  { let exit = true; }    // q
+            
+            // Note: These keys will repeat fast on long press now
+            // (That is fine as they are just for temporary testing)
+            if (key = 83) { do addScore(10); }     // s
+            if (key = 68) { 
+                do loseLife(); 
+                do Sys.wait(150); // Small delay so not all lives are lost at once
+            }   
+
+            // --- Game speed control ---
+            // Smaller number -> Hook moves faster
+            // Larger number -> Movement is slower and smoother
+            do Sys.wait(25);
+        }
+        return;
+    }
+
+    /** Draws the score and initial hearts */
+    method void drawGui() {
+        // 1. Draw score on the left
+        do Output.moveCursor(0, 0);
+        do Output.printString("Score: 0");
+
+        // 2. Draw three hearts on top right
+        // Note: Your Bitmap function draws 2 words to the left (location-2)
+        // So I chose positions that give nice spacing in the right corner
+        do drawHeart(31); // Right heart (draws at columns 29-30)
+        do drawHeart(28); // Middle heart (draws at columns 26-27)
+        do drawHeart(25); // Left heart (draws at columns 23-24)
+        return;
+    }
+
+    /** Function to add score and update screen */
+    method void addScore(int points) {
+        let score = score + points;
+        do Output.moveCursor(0, 7); // Move cursor after "Score: "
+        do Output.printInt(score);
+        return;
+    }
+
+    /** Function to lose life and remove a heart */
+    method void loseLife() {
+        if (lives > 0) {
+            do Screen.setColor(false); // White color for erasing
+            
+            // Calculate erasure based on positions in drawGui
+            // Each word is 16 pixels. The heart takes 2 words width (32 pixels)
+            
+            // Right heart (location 31 -> columns 29,30)
+            // 29 * 16 = 464
+            if (lives = 3) { do Screen.drawRectangle(464, 0, 495, 16); } 
+            
+            // Middle heart (location 28 -> columns 26,27)
+            // 26 * 16 = 416
+            if (lives = 2) { do Screen.drawRectangle(416, 0, 447, 16); } 
+
+            // Left heart (location 25 -> columns 23,24)
+            // 23 * 16 = 368
+            if (lives = 1) { do Screen.drawRectangle(368, 0, 399, 16); } 
+
+            let lives = lives - 1;
+            do Screen.setColor(true); // Return to black
+        }
+        return;
+    }
+
+    /** Draws a heart at specific memory location (your Bitmap code) */
+    method void drawHeart(int location) {
+        var int memAddress; 
+        let memAddress = 16384 + location;
+        
+        // column -2
+        do Memory.poke(memAddress - 2, 25344);
+        do Memory.poke(memAddress + 30, -2176);
+        do Memory.poke(memAddress + 62, -128);
+        do Memory.poke(memAddress + 94, 32512);
+        do Memory.poke(memAddress + 126, 15872);
+        do Memory.poke(memAddress + 158, 7168);
+        do Memory.poke(memAddress + 190, 2048);
+        
+        // column -1 (clean leftovers to right of heart)
+        do Memory.poke(memAddress + 31, 0);
+        do Memory.poke(memAddress + 63, 0);
+        return;
+    }
+
+    /** Memory disposal */
+    method void dispose() {
+        do penguin.dispose();
+        do hook.dispose();
+        do ice.dispose();
+        do Memory.deAlloc(this);
+        return;
+    }
+}
