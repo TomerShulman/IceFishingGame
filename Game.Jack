@@ -1,124 +1,300 @@
 class Game {
-    // Graphic objects
+    // --- Constant Objects ---
     field Penguin penguin;
     field Hook hook;
     field Ice ice;
+    
+    // --- Fish Management ---
+    field Array fishList;   
+    field int fishCount;    
+    field int spawnTimer;   
 
-    // Game state variables
+    // --- Jellyfish Management ---
+    field Array jellyList;
+    field int jellyCount;
+    field int jellyTimer;
+
+    // --- Game State Variables ---
     field boolean exit;
+    field boolean restart; 
     field int score;
     field int lives; 
+    field int randomCounter; 
 
     /** Constructor: Initializes the game */
     constructor Game new() {
-        // Clear screen and initial settings
+        var int i;
+        
         do Screen.clearScreen();
         let exit = false;
+        let restart = false; 
         let score = 0;
-        let lives = 3; // Start with 3 hearts
-
+        let lives = 3; 
+        let randomCounter = 0;
+        let spawnTimer = 0;
+        let jellyTimer = 0;
+        
         // Create objects
         let ice = Ice.new();
         let penguin = Penguin.new();
-        let hook = Hook.new(256); // Hook position (aligned with penguin)
+        let hook = Hook.new(256); 
 
-        // Draw world
+        // Initial drawing
         do ice.draw(256);
         do penguin.draw();
         do hook.draw();
-
-        // Draw GUI (Score and lives)
         do drawGui(); 
-        
+
+        // Initialize arrays
+        let fishCount = 3; 
+        let fishList = Array.new(fishCount);
+        let jellyCount = 2; 
+        let jellyList = Array.new(jellyCount);
+
+        let i = 0;
+        while (i < fishCount) {
+            let fishList[i] = null;
+            let i = i + 1;
+        }
+        let i = 0;
+        while (i < jellyCount) {
+            let jellyList[i] = null;
+            let i = i + 1;
+        }
+
+        // First fish
+        do trySpawnFish();
+
         return this;
     }
 
-    /** Main function running the game */
+    /** Returns true if the player requested to restart */
+    method boolean shouldRestart() {
+        return restart;
+    }
+
+    /** Main loop */
     method void run() {
         var char key;
+        var int i;
+        var Fish currentFish;
+        var Jellyfish currentJelly;
 
         while (~exit) {
-            // Check which key is currently pressed
             let key = Keyboard.keyPressed();
+            let randomCounter = randomCounter + 1;
             
-            // --- Movement (works with long press) ---
-            if (key = 131) { do hook.moveUp(); }   // Up arrow
-            if (key = 133) { do hook.moveDown(); } // Down arrow
+            // 1. Spawn Fish
+            let spawnTimer = spawnTimer + 1;
+            if (spawnTimer > 20) {
+                do trySpawnFish();
+                let spawnTimer = 0;
+            }
 
-            // --- Single keys ---
+            // 2. Spawn Jellyfish
+            let jellyTimer = jellyTimer + 1;
+            if (jellyTimer > 60) {
+                do trySpawnJelly();
+                let jellyTimer = 0;
+            }
+
+            // 3. Fish Loop
+            let i = 0;
+            while (i < fishCount) {
+                let currentFish = fishList[i];
+                if (~(currentFish = null)) {
+                    if (currentFish.getIsCaught()) {
+                        do currentFish.snapToHook(hook.getX(), hook.getY());
+                    } else {
+                        do currentFish.move();
+                    }
+
+                    if (currentFish.getIsDead()) {
+                        do currentFish.erase(); 
+                        do currentFish.dispose(); 
+                        let fishList[i] = null;   
+                    } else {
+                        if (~currentFish.getIsCaught()) {
+                            if (checkCollision(currentFish, hook.getX(), hook.getY())) {
+                                 do currentFish.setCaught(true);
+                                 do addScore(100);
+                            }
+                        }
+                    }
+                }
+                let i = i + 1;
+            }
+
+            // 4. Jellyfish Loop
+            let i = 0;
+            while (i < jellyCount) {
+                let currentJelly = jellyList[i];
+                if (~(currentJelly = null)) {
+                    do currentJelly.move();
+
+                    if (currentJelly.getIsDead()) {
+                        do currentJelly.erase();
+                        do currentJelly.dispose();
+                        let jellyList[i] = null;
+                    } else {
+                        if (checkCollisionJelly(currentJelly, hook.getX(), hook.getY())) {
+                            do loseLife(); 
+                            // After loseLife check if we exited
+                            if (exit) { 
+                                return; // Immediate exit if lives ran out
+                            }
+                            
+                            do currentJelly.setDead(true);
+                            do currentJelly.erase();
+                            do currentJelly.dispose();
+                            let jellyList[i] = null;
+                        }
+                    }
+                }
+                let i = i + 1;
+            }
+
+            // 5. Controls
             if (key = 81)  { let exit = true; }    // q
+            if (key = 131) { do hook.moveUp(); }   // up arrow
+            if (key = 133) { do hook.moveDown(); } // down arrow
             
-            // Note: These keys will repeat fast on long press now
-            // (That is fine as they are just for temporary testing)
-            if (key = 83) { do addScore(10); }     // s
-            if (key = 68) { 
-                do loseLife(); 
-                do Sys.wait(150); // Small delay so not all lives are lost at once
-            }   
+            // Restart key during game (r or R)
+            if ((key = 82) | (key = 114)) {
+                let restart = true;
+                let exit = true;
+            }
 
-            // --- Game speed control ---
-            // Smaller number -> Hook moves faster
-            // Larger number -> Movement is slower and smoother
-            do Sys.wait(25);
+            do Sys.wait(50);
         }
         return;
     }
 
-    /** Draws the score and initial hearts */
-    method void drawGui() {
-        // 1. Draw score on the left
-        do Output.moveCursor(0, 0);
-        do Output.printString("Score: 0");
-
-        // 2. Draw three hearts on top right
-        // Note: Your Bitmap function draws 2 words to the left (location-2)
-        // So I chose positions that give nice spacing in the right corner
-        do drawHeart(31); // Right heart (draws at columns 29-30)
-        do drawHeart(28); // Middle heart (draws at columns 26-27)
-        do drawHeart(25); // Left heart (draws at columns 23-24)
+    method void trySpawnFish() {
+        var int i;
+        var int direction, startX, startY;
+        var Fish f;
+        
+        let i = 0;
+        while (i < fishCount) {
+            if (fishList[i] = null) {
+                let direction = 1;      
+                let startX = 0;
+                let startY = 140 + (randomCounter & 63); 
+                let f = Fish.new(startX, startY, direction);
+                let fishList[i] = f;
+                do f.draw();
+                return; 
+            }
+            let i = i + 1;
+        }
         return;
     }
 
-    /** Function to add score and update screen */
+    method void trySpawnJelly() {
+        var int i;
+        var int direction, startX, startY;
+        var Jellyfish j;
+        
+        let i = 0;
+        while (i < jellyCount) {
+            if (jellyList[i] = null) {
+                if ((randomCounter & 1) = 0) {
+                     let direction = -1;
+                     let startX = 480; 
+                } else {
+                     let direction = 1;
+                     let startX = 32; 
+                }
+                let startY = 150 + (randomCounter & 63); 
+                let j = Jellyfish.new(startX, startY, direction);
+                let jellyList[i] = j;
+                do j.draw();
+                return;
+            }
+            let i = i + 1;
+        }
+        return;
+    }
+
+    method boolean checkCollision(Fish f, int hookX, int hookY) {
+        var int fishX, fishY;
+        if (f = null) { return false; }
+        let fishX = f.getX();
+        let fishY = f.getY();
+        if ((hookX > fishX) & (hookX < (fishX + 40))) {
+            if ((hookY > fishY) & (hookY < (fishY + 30))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    method boolean checkCollisionJelly(Jellyfish j, int hookX, int hookY) {
+        var int jX, jY;
+        if (j = null) { return false; }
+        let jX = j.getX(); 
+        let jY = j.getY();
+        if ((hookX > (jX - 32)) & (hookX < jX)) {
+            if ((hookY > jY) & (hookY < (jY + 23))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    method void drawGui() {
+        do Output.moveCursor(0, 0);
+        do Output.printString("Score: 0");
+        do drawHeart(31); 
+        do drawHeart(29); 
+        do drawHeart(27); 
+        return;
+    }
+
     method void addScore(int points) {
         let score = score + points;
-        do Output.moveCursor(0, 7); // Move cursor after "Score: "
+        do Output.moveCursor(0, 7);
         do Output.printInt(score);
         return;
     }
 
-    /** Function to lose life and remove a heart */
     method void loseLife() {
+        var char key;
+        
         if (lives > 0) {
-            do Screen.setColor(false); // White color for erasing
-            
-            // Calculate erasure based on positions in drawGui
-            // Each word is 16 pixels. The heart takes 2 words width (32 pixels)
-            
-            // Right heart (location 31 -> columns 29,30)
-            // 29 * 16 = 464
+            do Screen.setColor(false);
             if (lives = 3) { do Screen.drawRectangle(464, 0, 495, 16); } 
-            
-            // Middle heart (location 28 -> columns 26,27)
-            // 26 * 16 = 416
-            if (lives = 2) { do Screen.drawRectangle(416, 0, 447, 16); } 
-
-            // Left heart (location 25 -> columns 23,24)
-            // 23 * 16 = 368
-            if (lives = 1) { do Screen.drawRectangle(368, 0, 399, 16); } 
-
+            if (lives = 2) { do Screen.drawRectangle(432, 0, 463, 16); } 
+            if (lives = 1) { do Screen.drawRectangle(400, 0, 431, 16); } 
             let lives = lives - 1;
-            do Screen.setColor(true); // Return to black
+            do Screen.setColor(true); 
+            
+            if (lives = 0) {
+                do Output.moveCursor(10, 27);
+                do Output.printString("GAME OVER");
+                do Output.moveCursor(12, 20);
+                do Output.printString("Press 'R' to Restart");
+
+                // Loop waits for one of: R=82, r=114, Q=81, q=113
+                while (~(key = 82) & ~(key = 114) & ~(key = 81) & ~(key = 113)) { 
+                     let key = Keyboard.keyPressed();
+                }
+                
+                // If R or r pressed -> Restart
+                if ((key = 82) | (key = 114)) { 
+                    let restart = true; 
+                } 
+                
+                let exit = true; // Exit current game loop
+            }
         }
         return;
     }
 
-    /** Draws a heart at specific memory location (your Bitmap code) */
     method void drawHeart(int location) {
         var int memAddress; 
         let memAddress = 16384 + location;
-        
-        // column -2
         do Memory.poke(memAddress - 2, 25344);
         do Memory.poke(memAddress + 30, -2176);
         do Memory.poke(memAddress + 62, -128);
@@ -126,18 +302,36 @@ class Game {
         do Memory.poke(memAddress + 126, 15872);
         do Memory.poke(memAddress + 158, 7168);
         do Memory.poke(memAddress + 190, 2048);
-        
-        // column -1 (clean leftovers to right of heart)
         do Memory.poke(memAddress + 31, 0);
         do Memory.poke(memAddress + 63, 0);
         return;
     }
 
-    /** Memory disposal */
     method void dispose() {
+        var int i;
+        var Fish f;
+        var Jellyfish j;
+        
         do penguin.dispose();
         do hook.dispose();
         do ice.dispose();
+        
+        let i = 0;
+        while (i < fishCount) {
+            let f = fishList[i];
+            if (~(f = null)) { do f.dispose(); }
+            let i = i + 1;
+        }
+        do fishList.dispose();
+        
+        let i = 0;
+        while (i < jellyCount) {
+            let j = jellyList[i];
+            if (~(j = null)) { do j.dispose(); }
+            let i = i + 1;
+        }
+        do jellyList.dispose();
+
         do Memory.deAlloc(this);
         return;
     }

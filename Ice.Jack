@@ -13,7 +13,7 @@ class Ice {
         var int holeLeft, holeRight;
         
         // Correction: Shift 8 pixels to the left
-        let hookX = hookX - 11; 
+        let hookX = hookX - 1; 
         
         let halfWidth = 22; 
         let holeLeft = hookX - halfWidth;
@@ -27,8 +27,7 @@ class Ice {
         // 2. Right surface
         do Screen.drawRectangle(holeRight, surfaceY, 511, surfaceY + thickness);
 
-        // 3. Connecting water line at the bottom
-        do Screen.drawLine(holeLeft, surfaceY + thickness, holeRight, surfaceY + thickness);
+
 
         return;
     }

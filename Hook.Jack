@@ -3,11 +3,10 @@ class Hook {
     field int y;
     field int rodTipY; 
 
-    // constructor
     constructor Hook new(int startX) {
         let x = startX;
         let y = 84;
-        let rodTipY = 40; 
+        let rodTipY = 41; 
         return this;
     }
 
@@ -18,10 +17,7 @@ class Hook {
 
     method void draw() {
         do Screen.setColor(true);
-        // Draw the line
         do Screen.drawLine(x, rodTipY, x, y);
-        
-        // Draw the hook
         do Screen.drawLine(x, y, x, y + 6);
         do Screen.drawLine(x, y + 6, x - 3, y + 6);
         do Screen.drawLine(x - 3, y + 6, x - 3, y + 3);
@@ -32,7 +28,6 @@ class Hook {
     method void erase() {
         do Screen.setColor(false);
         do Screen.drawLine(x, rodTipY, x, y);
-        
         do Screen.drawLine(x, y, x, y + 6);
         do Screen.drawLine(x, y + 6, x - 3, y + 6);
         do Screen.drawLine(x - 3, y + 6, x - 3, y + 3);
@@ -42,9 +37,10 @@ class Hook {
 
     // Move down
     method void moveDown() {
-        if (y < 245) {
+        if (y < 240) { 
             do erase();     
-            let y = y + 2; 
+            // Increased speed to 5
+            let y = y + 5; 
             do draw();      
         }
         return;
@@ -52,20 +48,15 @@ class Hook {
 
     // Move up
     method void moveUp() {
-        if (y > 50) {
+        if (y > (rodTipY + 5)) { 
             do erase();
-            let y = y - 2;
+            // Increased speed to 5
+            let y = y - 5;
             do draw();
         }
         return;
     }
 
-    // Getters
-    method int getY() {
-        return y;
-    }
-    
-    method int getX() {
-        return x;
-    }
+    method int getY() { return y; }
+    method int getX() { return x; }
 }

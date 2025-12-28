@@ -3,11 +3,17 @@ class Main {
     /** Initializes a new game and starts running it. */
     function void main() {
         var Game game;
-
-        let game = Game.new();
-        do game.run();
+        var boolean restart;
         
-        do game.dispose();
+        let restart = true;
+        
+        while (restart) {
+            let restart = false;
+            let game = Game.new();
+            do game.run();
+            let restart = game.shouldRestart();
+            do game.dispose();
+        }
         return;
     }
 }
